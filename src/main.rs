@@ -45,11 +45,24 @@ fn main() {
     //write_out_image(image_width, image_height, pixels);
 }
 
+fn hit_sphere(center: Point3, radius: f64, r: Ray) -> bool {
+    let oc: Vec3 = r.origin - center;
+    let a = Vec3::dot(r.direction, r.direction);
+    let b = 2.0 * Vec3::dot(oc, r.direction);
+    let c = Vec3::dot(oc, oc) - radius * radius;
+    let discriminant = b * b - 4.0 * a * c;
+    discriminant > 0.0
+}
+
 fn ray_color(r: Ray) -> Color {
-    let unit_direction: Vec3 = Vec3::unit_vector(r.direction);
-    let t = 0.5 * (unit_direction.g + 1.0);
-    let res = Color::new(1.0, 1.0, 1.0) * (1.0 - t) + Color::new(0.5, 0.7, 1.0) * t;
-    res
+    if hit_sphere(Point3::new(0.0, 0.0, -1.0), 0.5, r) {
+        Color::new(1.0, 0.0, 0.0)
+    } else {
+        let unit_direction: Vec3 = Vec3::unit_vector(r.direction);
+        let t = 0.5 * (unit_direction.g + 1.0);
+        let res = Color::new(1.0, 1.0, 1.0) * (1.0 - t) + Color::new(0.5, 0.7, 1.0) * t;
+        res
+    }
 }
 
 fn write_to_file(width: u32, height: u32, pixels: Vec<Color>) -> Result<(), Error> {

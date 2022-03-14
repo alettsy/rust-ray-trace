@@ -23,7 +23,7 @@ impl Vec3 {
         self.r * self.r + self.g * self.g + self.b * self.b
     }
 
-    fn cross(self, other: Vec3) -> Vec3 {
+    pub fn cross(self, other: Vec3) -> Vec3 {
         Vec3 {
             r: self.g * other.b - self.b * other.g,
             g: self.b * other.r - self.r * other.b,
@@ -31,7 +31,7 @@ impl Vec3 {
         }
     }
 
-    fn dot(self, other: Vec3) -> f64 {
+    pub fn dot(self, other: Vec3) -> f64 {
         self.r * other.r + self.g * other.g + self.b * other.b
     }
 
