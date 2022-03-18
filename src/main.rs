@@ -1,7 +1,7 @@
 mod ray;
 mod vec3;
 
-use std::io::{BufRead, BufReader, Write};
+use std::io::Write;
 use std::{fs::File, io::Error};
 
 use image::{Rgba, RgbaImage};
@@ -62,10 +62,10 @@ fn ray_color(r: Ray) -> Color {
     let t = hit_sphere(Point3::new(0.0, 0.0, -1.0), 0.5, r);
     if t > 0.0 {
         let n = Vec3::unit_vector(r.at(t) - Vec3::new(0.0, 0.0, -1.0));
-        0.5 * Color::new(n.r + 1.0, n.g + 1.0, n.b + 1.0)
+        0.5 * Color::new(n.x + 1.0, n.y + 1.0, n.z + 1.0)
     } else {
         let unit_direction: Vec3 = Vec3::unit_vector(r.direction);
-        let t = 0.5 * (unit_direction.g + 1.0);
+        let t = 0.5 * (unit_direction.y + 1.0);
         let res = Color::new(1.0, 1.0, 1.0) * (1.0 - t) + Color::new(0.5, 0.7, 1.0) * t;
         res
     }
@@ -79,16 +79,16 @@ fn write_to_file(width: u32, height: u32, pixels: Vec<Color>) -> Result<(), Erro
     write!(file, "{}", header)?;
 
     for i in 0..pixels.len() {
-        let r = (pixels[i].r * 255 as f64) as usize;
-        let g = (pixels[i].g * 255 as f64) as usize;
-        let b = (pixels[i].b * 255 as f64) as usize;
+        let r = (pixels[i].x * 255 as f64) as usize;
+        let g = (pixels[i].y * 255 as f64) as usize;
+        let b = (pixels[i].z * 255 as f64) as usize;
         write!(file, "{} {} {}\n", r, g, b).unwrap();
     }
 
     Ok(())
 }
 
-fn write_out_image(sizex: u32, sizey: u32, pixels: Vec<Color>) {
+fn _write_out_image(sizex: u32, sizey: u32, pixels: Vec<Color>) {
     let mut img = RgbaImage::new(sizex, sizey);
 
     for j in (0..sizey).rev() {
@@ -98,9 +98,9 @@ fn write_out_image(sizex: u32, sizey: u32, pixels: Vec<Color>) {
                 i,
                 j,
                 Rgba([
-                    (pixels[loc].r * 255 as f64) as u8,
-                    (pixels[loc].g * 255 as f64) as u8,
-                    (pixels[loc].b * 255 as f64) as u8,
+                    (pixels[loc].x * 255 as f64) as u8,
+                    (pixels[loc].y * 255 as f64) as u8,
+                    (pixels[loc].z * 255 as f64) as u8,
                     255,
                 ]),
             );
