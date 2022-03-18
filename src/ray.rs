@@ -8,13 +8,10 @@ pub struct Ray {
 
 impl Ray {
     pub fn new(origin: Point3, direction: Point3) -> Ray {
-        Ray {
-            origin: origin,
-            direction: direction,
-        }
+        Ray { origin, direction }
     }
 
-    pub fn at(self, t: f64) -> Point3 {
+    pub fn at(&self, t: f64) -> Point3 {
         self.origin + self.direction * t
     }
 }

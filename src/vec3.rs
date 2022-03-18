@@ -23,7 +23,7 @@ impl Vec3 {
         self.x * self.x + self.y * self.y + self.z * self.z
     }
 
-    pub fn cross(self, other: Vec3) -> Vec3 {
+    pub fn cross(&self, other: Vec3) -> Vec3 {
         Vec3 {
             x: self.y * other.z - self.z * other.y,
             y: self.z * other.x - self.x * other.z,
@@ -31,12 +31,12 @@ impl Vec3 {
         }
     }
 
-    pub fn dot(self, other: Vec3) -> f64 {
+    pub fn dot(&self, other: Vec3) -> f64 {
         self.x * other.x + self.y * other.y + self.z * other.z
     }
 
-    pub fn unit_vector(v: Vec3) -> Vec3 {
-        v / v.length()
+    pub fn unit_vector(&self) -> Vec3 {
+        *self / self.length()
     }
 }
 
