@@ -72,7 +72,7 @@ fn ray_color(r: Ray) -> Color {
 }
 
 fn write_to_file(width: u32, height: u32, pixels: Vec<Color>) -> Result<(), Error> {
-    let mut file = File::create("test_output.ppm")?;
+    let mut file = File::create("output.ppm")?;
 
     let header = format!("P3\n{} {}\n255\n", width, height).to_string();
 
