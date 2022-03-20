@@ -1,6 +1,6 @@
 use crate::vec3::Point3;
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Debug)]
 pub struct Ray {
     pub origin: Point3,
     pub direction: Point3,
@@ -13,6 +13,12 @@ impl Ray {
 
     pub fn at(&self, t: f64) -> Point3 {
         self.origin + self.direction * t
+    }
+}
+
+impl PartialEq for Ray {
+    fn eq(&self, other: &Self) -> bool {
+        self.origin == other.origin && self.direction == other.direction
     }
 }
 
@@ -46,5 +52,20 @@ mod tests {
         assert_eq!(result.x, 41.0);
         assert_eq!(result.y, 52.0);
         assert_eq!(result.z, 63.0);
+    }
+
+    #[test]
+    fn equality() {
+        let origin = Vec3::new(1.0, 2.0, 3.0);
+        let direction = Vec3::new(4.0, 5.0, 6.0);
+        let ray1 = Ray::new(origin, direction);
+        let ray3 = Ray::new(origin, direction);
+
+        let origin = Vec3::new(1.0, 5.0, 3.0);
+        let direction = Vec3::new(4.0, 5.0, 6.0);
+        let ray2 = Ray::new(origin, direction);
+
+        assert_ne!(ray1, ray2);
+        assert_eq!(ray1, ray3);
     }
 }

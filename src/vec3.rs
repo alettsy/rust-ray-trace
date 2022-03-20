@@ -5,7 +5,7 @@ use rand::{thread_rng, Rng};
 pub type Color = Vec3;
 pub type Point3 = Vec3;
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Debug)]
 pub struct Vec3 {
     pub x: f64,
     pub y: f64,
@@ -57,6 +57,12 @@ impl Vec3 {
             y: rng.gen_range(min..=max),
             z: rng.gen_range(min..=max),
         }
+    }
+}
+
+impl PartialEq for Vec3 {
+    fn eq(&self, other: &Self) -> bool {
+        other.x == self.x && other.y == self.y && other.z == self.z
     }
 }
 
@@ -365,5 +371,15 @@ mod tests {
         let test2 = Vec3::new(1.0, 2.0, 3.0);
         let result = test1.dot(test2);
         assert_eq!(result, 38.0);
+    }
+
+    #[test]
+    fn equality() {
+        let test1 = Vec3::new(5.0, 6.0, 7.0);
+        let test2 = Vec3::new(1.0, 2.0, 3.0);
+        assert_ne!(test1, test2);
+
+        let test3 = Vec3::new(5.0, 6.0, 7.0);
+        assert_eq!(test1, test3);
     }
 }

@@ -32,11 +32,14 @@ fn main() {
     let mut world = HittableList::new();
     let sphere1 = Sphere::new(Point3::new(0.0, 0.0, -1.0), 0.5);
     let sphere2 = Sphere::new(Point3::new(0.0, -100.5, -1.0), 100.0);
-    world.add(&sphere1);
-    world.add(&sphere2);
+    world.add(Box::new(sphere1));
+    world.add(Box::new(sphere2));
 
     // Camera
-    let camera = Camera::new();
+    let aspect_ratio = 16.0 / 9.0;
+    let viewport_height = 2.0;
+    let focal_length = 1.0;
+    let camera = Camera::new(aspect_ratio, viewport_height, focal_length);
 
     // Generate pixels
     let mut pixels: Vec<Color> = vec![];

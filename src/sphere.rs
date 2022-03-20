@@ -3,8 +3,8 @@ use crate::Ray;
 use crate::Vec3;
 
 pub struct Sphere {
-    center: Vec3,
-    radius: f64,
+    pub center: Vec3,
+    pub radius: f64,
 }
 
 impl Sphere {
@@ -38,8 +38,21 @@ impl Hittable for Sphere {
         rec.t = root;
         rec.p = r.at(rec.t);
         let outward_normal = (rec.p - self.center) / self.radius;
-        rec.set_face_normal(r, &outward_normal);
+        rec.set_face_normal(r, outward_normal);
 
         return true;
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::{sphere::Sphere, vec3::Vec3};
+
+    #[test]
+    fn new_sphere() {
+        let sphere = Sphere::new(Vec3::new(10.0, 11.0, 12.0), 50.0);
+
+        assert_eq!(sphere.center, Vec3::new(10.0, 11.0, 12.0));
+        assert_eq!(sphere.radius, 50.0);
     }
 }

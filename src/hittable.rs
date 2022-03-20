@@ -19,16 +19,53 @@ impl HitRecord {
         }
     }
 
-    pub fn set_face_normal(&mut self, r: &Ray, outward_normal: &Vec3) {
-        self.front_face = r.direction.dot(*outward_normal) < 0.0;
+    pub fn set_face_normal(&mut self, r: &Ray, outward_normal: Vec3) {
+        self.front_face = r.direction.dot(outward_normal) < 0.0;
         self.normal = if self.front_face {
-            *outward_normal
+            outward_normal
         } else {
-            -*outward_normal
+            -outward_normal
         };
     }
 }
 
 pub trait Hittable {
     fn hit(&self, r: &Ray, t_min: f64, t_max: f64, rec: &mut HitRecord) -> bool;
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::{hittable::HitRecord, ray::Ray, vec3::Vec3};
+
+    #[test]
+    fn new_empty_hit_record() {
+        let empty = HitRecord::new_empty();
+
+        assert_eq!(empty.p, Vec3::new(0.0, 0.0, 0.0));
+        assert_eq!(empty.normal, Vec3::new(0.0, 0.0, 0.0));
+        assert_eq!(empty.t, 0.0);
+        assert_eq!(empty.front_face, false);
+    }
+
+    #[test]
+    fn set_face_normal_hit_record_false() {
+        let mut record = HitRecord::new_empty();
+        let ray = Ray::new(Vec3::new(0.0, 0.0, 0.0), Vec3::new(1.0, 0.0, 0.0));
+        let normal = Vec3::new(10.0, 10.0, 10.0);
+
+        record.set_face_normal(&ray, normal);
+
+        assert_eq!(record.normal, Vec3::new(-10.0, -10.0, -10.0));
+    }
+
+    #[test]
+    fn set_face_normal_hit_record_true() {
+        let mut record = HitRecord::new_empty();
+        let ray = Ray::new(Vec3::new(0.0, 0.0, 0.0), Vec3::new(-1.0, -1.0, -1.0));
+        let normal = Vec3::new(10.0, 10.0, 10.0);
+
+        record.set_face_normal(&ray, normal);
+
+        assert_eq!(record.normal, Vec3::new(10.0, 10.0, 10.0));
+    }
 }

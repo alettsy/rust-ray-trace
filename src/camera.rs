@@ -11,11 +11,8 @@ pub struct Camera {
 }
 
 impl Camera {
-    pub fn new() -> Camera {
-        let aspect_ratio = 16.0 / 9.0;
-        let viewport_height = 2.0;
+    pub fn new(aspect_ratio: f64, viewport_height: f64, focal_length: f64) -> Camera {
         let viewport_width = aspect_ratio * viewport_height;
-        let focal_length = 1.0;
 
         let origin = Point3::new(0.0, 0.0, 0.0);
         let horizontal = Vec3::new(viewport_width, 0.0, 0.0);
@@ -35,6 +32,34 @@ impl Camera {
         Ray::new(
             self.origin,
             self.lower_left_corner + self.horizontal * u + self.vertical * v - self.origin,
+        )
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::camera::Camera;
+    use crate::ray::Ray;
+    use crate::vec3::Vec3;
+
+    #[test]
+    fn new_camera() {
+        let camera = Camera::new(2.0, 3.0, 1.0);
+
+        assert_eq!(camera.origin, Vec3::new(0.0, 0.0, 0.0));
+        assert_eq!(camera.horizontal, Vec3::new(6.0, 0.0, 0.0));
+        assert_eq!(camera.vertical, Vec3::new(0.0, 3.0, 0.0));
+        assert_eq!(camera.lower_left_corner, Vec3::new(-3.0, -1.5, -1.0));
+    }
+
+    #[test]
+    fn get_ray() {
+        let camera = Camera::new(2.0, 3.0, 1.0);
+        let result = camera.get_ray(10.0, 10.0);
+
+        assert_eq!(
+            result,
+            Ray::new(Vec3::new(0.0, 0.0, 0.0), Vec3::new(57.0, 28.5, -1.0))
         )
     }
 }
