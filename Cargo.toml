@@ -1,5 +1,5 @@
 [package]
-name = "ppm_test"
+name = "raytracing"
 version = "0.1.0"
 edition = "2021"
 

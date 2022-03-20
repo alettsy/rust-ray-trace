@@ -1,22 +1,13 @@
-mod camera;
-mod hittable;
-mod hittable_list;
-mod ray;
-mod sphere;
-mod vec3;
-
 use rand::{thread_rng, Rng};
+use raytracing::camera::Camera;
+use raytracing::hittable::{HitRecord, Hittable};
+use raytracing::hittable_list::HittableList;
+use raytracing::ray::Ray;
+use raytracing::sphere::Sphere;
+use raytracing::vec3::{Color, Point3, Vec3};
 use std::f64::INFINITY;
 use std::io::Write;
 use std::{fs::File, io::Error};
-
-use hittable::{HitRecord, Hittable};
-use ray::Ray;
-use vec3::{Color, Point3, Vec3};
-
-use crate::camera::Camera;
-use crate::hittable_list::HittableList;
-use crate::sphere::Sphere;
 
 fn main() {
     // Image

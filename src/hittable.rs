@@ -1,5 +1,5 @@
-use crate::Ray;
-use crate::Vec3;
+use crate::ray::Ray;
+use crate::vec3::Vec3;
 
 #[derive(Clone, Copy)]
 pub struct HitRecord {
@@ -31,10 +31,6 @@ impl HitRecord {
 
 pub trait Hittable {
     fn hit(&self, r: &Ray, t_min: f64, t_max: f64, rec: &mut HitRecord) -> bool;
-}
-
-pub trait Material {
-    fn scatter(&self, r_in: &Ray, rec: &HitRecord, attenuation: &Vec3, scattered: &Ray) -> bool;
 }
 
 #[cfg(test)]

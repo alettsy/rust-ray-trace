@@ -24,8 +24,8 @@ impl PartialEq for Ray {
 
 #[cfg(test)]
 mod tests {
-    use crate::Ray;
-    use crate::Vec3;
+    use crate::ray::Ray;
+    use crate::vec3::Vec3;
 
     #[test]
     fn test_new() {

@@ -208,7 +208,7 @@ impl fmt::Display for Vec3 {
 
 #[cfg(test)]
 mod tests {
-    use crate::Vec3;
+    use crate::vec3::Vec3;
 
     #[test]
     fn create_new_vec3() {
