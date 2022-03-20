@@ -33,6 +33,10 @@ pub trait Hittable {
     fn hit(&self, r: &Ray, t_min: f64, t_max: f64, rec: &mut HitRecord) -> bool;
 }
 
+pub trait Material {
+    fn scatter(&self, r_in: &Ray, rec: &HitRecord, attenuation: &Vec3, scattered: &Ray) -> bool;
+}
+
 #[cfg(test)]
 mod tests {
     use crate::{hittable::HitRecord, ray::Ray, vec3::Vec3};
