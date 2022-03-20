@@ -1,5 +1,7 @@
 use std::{fmt, ops};
 
+use rand::{thread_rng, Rng};
+
 pub type Color = Vec3;
 pub type Point3 = Vec3;
 
@@ -37,6 +39,24 @@ impl Vec3 {
 
     pub fn unit_vector(&self) -> Vec3 {
         *self / self.length()
+    }
+
+    pub fn random() -> Vec3 {
+        let mut rng = thread_rng();
+        Vec3 {
+            x: rng.gen_range(0.0..=1.0),
+            y: rng.gen_range(0.0..=1.0),
+            z: rng.gen_range(0.0..=1.0),
+        }
+    }
+
+    pub fn random_range(min: f64, max: f64) -> Vec3 {
+        let mut rng = thread_rng();
+        Vec3 {
+            x: rng.gen_range(min..=max),
+            y: rng.gen_range(min..=max),
+            z: rng.gen_range(min..=max),
+        }
     }
 }
 

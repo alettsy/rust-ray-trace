@@ -24,6 +24,7 @@ fn main() {
     let image_width = 400;
     let image_height = (image_width as f64 / aspect_ratio) as u32;
     let samples_per_pixel: usize = 100;
+    let max_depth = 15;
 
     println!("Image size: {}x{}", image_height, image_width);
 
@@ -48,12 +49,14 @@ fn main() {
                 let u: f64 = (i as f64 + rng.gen_range(0.0..=1.0)) / (image_width as f64 - 1.0);
                 let v: f64 = (j as f64 + rng.gen_range(0.0..=1.0)) / (image_height as f64 - 1.0);
                 let r = camera.get_ray(u, v);
-                pixel_color += ray_color(&r, &world);
+                pixel_color += ray_color(&r, &world, max_depth);
             }
             let final_color = generate_color(pixel_color, samples_per_pixel);
             pixels.push(final_color);
         }
     }
+
+    println!("Finished generating. Pixel count: {}", pixels.len());
 
     // Render
     write_to_file(image_width, image_height, &pixels).unwrap();
@@ -69,11 +72,17 @@ fn clamp(x: f64, min: f64, max: f64) -> f64 {
     }
 }
 
-fn ray_color(r: &Ray, world: &dyn Hittable) -> Color {
+fn ray_color(r: &Ray, world: &dyn Hittable, depth: usize) -> Color {
     let mut rec = HitRecord::new_empty();
 
-    if world.hit(r, 0.0, INFINITY, &mut rec) {
-        return 0.5 * (rec.normal + Color::new(1.0, 1.0, 1.0));
+    if depth <= 0 {
+        return Color::new(0.0, 0.0, 0.0);
+    }
+
+    if world.hit(r, 0.001, INFINITY, &mut rec) {
+        let target = rec.p + rec.normal + random_unit_vector();
+        let ray = Ray::new(rec.p, target - rec.p);
+        return 0.5 * ray_color(&ray, world, depth - 1);
     }
 
     let unit_direction = r.direction.unit_vector();
@@ -82,15 +91,30 @@ fn ray_color(r: &Ray, world: &dyn Hittable) -> Color {
     Color::new(1.0, 1.0, 1.0) * (1.0 - t) + Color::new(0.5, 0.7, 1.0) * t
 }
 
+fn random_in_unit_sphere() -> Vec3 {
+    loop {
+        let p = Vec3::random_range(-1.0, 1.0);
+        if p.length_squared() >= 1.0 {
+            continue;
+        } else {
+            return p;
+        }
+    }
+}
+
+fn random_unit_vector() -> Vec3 {
+    random_in_unit_sphere().unit_vector()
+}
+
 fn generate_color(pixel_color: Color, samples_per_pixel: usize) -> Color {
     let mut r = pixel_color.x;
     let mut g = pixel_color.y;
     let mut b = pixel_color.z;
 
     let scale = 1.0 / samples_per_pixel as f64;
-    r *= scale;
-    g *= scale;
-    b *= scale;
+    r = (scale * r).sqrt();
+    g = (scale * g).sqrt();
+    b = (scale * b).sqrt();
 
     let new_r = 256.0 * clamp(r, 0.0, 0.999);
     let new_g = 256.0 * clamp(g, 0.0, 0.999);
@@ -115,42 +139,3 @@ fn write_to_file(width: u32, height: u32, pixels: &Vec<Color>) -> Result<(), Err
 
     Ok(())
 }
-
-// fn _write_out_image(sizex: u32, sizey: u32, pixels: Vec<Color>) {
-//     let mut img = RgbaImage::new(sizex, sizey);
-
-//     for j in (0..sizey).rev() {
-//         for i in 0..sizex {
-//             let loc = (i + j * sizey) as usize;
-//             img.put_pixel(
-//                 i,
-//                 j,
-//                 Rgba([
-//                     (pixels[loc].x * 255 as f64) as u8,
-//                     (pixels[loc].y * 255 as f64) as u8,
-//                     (pixels[loc].z * 255 as f64) as u8,
-//                     255,
-//                 ]),
-//             );
-//         }
-//     }
-
-//     img.save("output.png").unwrap();
-// }
-
-// fn degrees_to_radians(degrees: f64) -> f64 {
-//     degrees * PI / 180.0
-// }
-
-// fn hit_sphere(center: Point3, radius: f64, r: Ray) -> f64 {
-//     let oc: Vec3 = r.origin - center;
-//     let a = r.direction.length_squared();
-//     let half_b = oc.dot(r.direction);
-//     let c = oc.length_squared() - radius * radius;
-//     let discriminant = half_b * half_b - a * c;
-//     if discriminant < 0.0 {
-//         -1.0
-//     } else {
-//         (-half_b - discriminant.sqrt()) / a
-//     }
-// }
