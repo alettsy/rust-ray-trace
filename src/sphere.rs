@@ -1,15 +1,21 @@
 use crate::hittable::{HitRecord, Hittable};
+use crate::material::Material;
 use crate::ray::Ray;
 use crate::vec3::Vec3;
 
 pub struct Sphere {
     pub center: Vec3,
     pub radius: f64,
+    pub material: Material,
 }
 
 impl Sphere {
-    pub fn new(center: Vec3, radius: f64) -> Sphere {
-        Sphere { center, radius }
+    pub fn new(center: Vec3, radius: f64, material: Material) -> Sphere {
+        Sphere {
+            center,
+            radius,
+            material,
+        }
     }
 }
 
@@ -41,6 +47,7 @@ impl Hittable for Sphere {
         empty_record.p = r.at(empty_record.t);
         let outward_normal = (empty_record.p - self.center) / self.radius;
         empty_record.set_face_normal(r, outward_normal);
+        empty_record.material = self.material;
 
         return Some(empty_record);
     }
@@ -48,11 +55,11 @@ impl Hittable for Sphere {
 
 #[cfg(test)]
 mod tests {
-    use crate::{sphere::Sphere, vec3::Vec3};
+    use crate::{material::Material, sphere::Sphere, vec3::Vec3};
 
     #[test]
     fn new_sphere() {
-        let sphere = Sphere::new(Vec3::new(10.0, 11.0, 12.0), 50.0);
+        let sphere = Sphere::new(Vec3::new(10.0, 11.0, 12.0), 50.0, Material::None);
 
         assert_eq!(sphere.center, Vec3::new(10.0, 11.0, 12.0));
         assert_eq!(sphere.radius, 50.0);

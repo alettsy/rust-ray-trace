@@ -2,6 +2,7 @@ use rand::{thread_rng, Rng};
 use raytracing::camera::Camera;
 use raytracing::hittable::{HitRecord, Hittable};
 use raytracing::hittable_list::HittableList;
+use raytracing::material::{Lambertian, Material, Metal, Scatterable};
 use raytracing::ray::Ray;
 use raytracing::sphere::Sphere;
 use raytracing::vec3::{Color, Point3, Vec3};
@@ -21,10 +22,36 @@ fn main() {
 
     // World
     let mut world = HittableList::new();
-    let sphere1 = Sphere::new(Point3::new(0.0, 0.0, -1.0), 0.5);
-    let sphere2 = Sphere::new(Point3::new(0.0, -100.5, -1.0), 100.0);
+
+    let material_ground = Lambertian::new(Color::new(0.8, 0.8, 0.0));
+    let material_center = Lambertian::new(Color::new(0.7, 0.3, 0.3));
+    let material_left = Metal::new(Color::new(0.8, 0.8, 0.8));
+    let material_right = Metal::new(Color::new(0.8, 0.6, 0.2));
+
+    let sphere1 = Sphere::new(
+        Point3::new(0.0, -100.5, -1.0),
+        100.0,
+        Material::Lambertian(material_ground),
+    );
+    let sphere2 = Sphere::new(
+        Point3::new(0.0, 0.0, -1.0),
+        0.5,
+        Material::Lambertian(material_center),
+    );
+    let sphere3 = Sphere::new(
+        Point3::new(-1.0, 0.0, -1.0),
+        0.5,
+        Material::Metal(material_left),
+    );
+    let sphere4 = Sphere::new(
+        Point3::new(1.0, 0.0, -1.0),
+        0.5,
+        Material::Metal(material_right),
+    );
     world.add(sphere1);
     world.add(sphere2);
+    world.add(sphere3);
+    world.add(sphere4);
 
     // Camera
     let aspect_ratio = 16.0 / 9.0;
@@ -84,15 +111,28 @@ fn ray_color(r: &Ray, world: &Vec<Sphere>, depth: usize) -> Color {
         return Color::new(0.0, 0.0, 0.0);
     }
 
-    if let Some(record) = hit_world(world, r, 0.001, INFINITY) {
-        let target = record.p + record.normal + random_unit_vector();
-        let ray = Ray::new(record.p, target - record.p);
-        return 0.5 * ray_color(&ray, world, depth - 1);
-    } else {
-        let unit_direction = r.direction.unit_vector();
-        let t = 0.5 * (unit_direction.y + 1.0);
-
-        Color::new(1.0, 1.0, 1.0) * (1.0 - t) + Color::new(0.5, 0.7, 1.0) * t
+    let hit = hit_world(world, r, 0.001, INFINITY);
+    match hit {
+        Some(record) => {
+            let scattered = record.material.scatter(r, &record);
+            match scattered {
+                Some((albedo, scattered_ray)) => {
+                    let target_color = ray_color(&scattered_ray, world, depth - 1);
+                    return Color::new(
+                        albedo.x * target_color.x,
+                        albedo.y * target_color.y,
+                        albedo.z * target_color.z,
+                    );
+                }
+                None => {
+                    return Color::new(0.0, 0.0, 0.0);
+                }
+            }
+        }
+        None => {
+            let t = 0.5 * (r.direction.unit_vector().y + 1.0);
+            return Color::new(1.0, 1.0, 1.0) * (1.0 - t) + Color::new(0.5, 0.7, 1.0) * t;
+        }
     }
 }
 

@@ -43,7 +43,7 @@ impl Hittable for HittableList {
 
 #[cfg(test)]
 mod tests {
-    use crate::{hittable_list::HittableList, sphere::Sphere, vec3::Vec3};
+    use crate::{hittable_list::HittableList, material::Material, sphere::Sphere, vec3::Vec3};
 
     #[test]
     fn new_hittable_list() {
@@ -55,12 +55,12 @@ mod tests {
     fn add_hittable_list() {
         let mut list = HittableList::new();
 
-        let item1 = Sphere::new(Vec3::new(0.0, 0.0, 0.0), 100.0);
+        let item1 = Sphere::new(Vec3::new(0.0, 0.0, 0.0), 100.0, Material::None);
         list.add(item1);
 
         assert_eq!(list.objects.len(), 1);
 
-        let item2 = Sphere::new(Vec3::new(0.0, 0.0, 0.0), 100.0);
+        let item2 = Sphere::new(Vec3::new(0.0, 0.0, 0.0), 100.0, Material::None);
         list.add(item2);
 
         assert_eq!(list.objects.len(), 2);
@@ -70,9 +70,9 @@ mod tests {
     fn clear_hittable_list() {
         let mut list = HittableList::new();
 
-        let item1 = Sphere::new(Vec3::new(0.0, 0.0, 0.0), 100.0);
+        let item1 = Sphere::new(Vec3::new(0.0, 0.0, 0.0), 100.0, Material::None);
         list.add(item1);
-        let item2 = Sphere::new(Vec3::new(0.0, 0.0, 0.0), 100.0);
+        let item2 = Sphere::new(Vec3::new(0.0, 0.0, 0.0), 100.0, Material::None);
         list.add(item2);
 
         list.clear();
