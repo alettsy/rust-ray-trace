@@ -23,8 +23,8 @@ fn main() {
     let mut world = HittableList::new();
     let sphere1 = Sphere::new(Point3::new(0.0, 0.0, -1.0), 0.5);
     let sphere2 = Sphere::new(Point3::new(0.0, -100.5, -1.0), 100.0);
-    world.add(Box::new(sphere1));
-    world.add(Box::new(sphere2));
+    world.add(sphere1);
+    world.add(sphere2);
 
     // Camera
     let aspect_ratio = 16.0 / 9.0;
@@ -43,7 +43,7 @@ fn main() {
                 let u: f64 = (i as f64 + rng.gen_range(0.0..=1.0)) / (image_width as f64 - 1.0);
                 let v: f64 = (j as f64 + rng.gen_range(0.0..=1.0)) / (image_height as f64 - 1.0);
                 let r = camera.get_ray(u, v);
-                pixel_color += ray_color(&r, &world, max_depth);
+                pixel_color += ray_color(&r, &world.objects, max_depth);
             }
             let final_color = generate_color(pixel_color, samples_per_pixel);
             pixels.push(final_color);
@@ -66,23 +66,34 @@ fn clamp(x: f64, min: f64, max: f64) -> f64 {
     }
 }
 
-fn ray_color(r: &Ray, world: &dyn Hittable, depth: usize) -> Color {
-    let mut rec = HitRecord::new_empty();
+fn hit_world(world: &Vec<Sphere>, r: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
+    let mut closest = t_max;
+    let mut hit_record = None;
+    for sphere in world {
+        if let Some(hit) = sphere.hit(r, t_min, closest) {
+            closest = hit.t;
+            hit_record = Some(hit);
+        }
+    }
 
+    hit_record
+}
+
+fn ray_color(r: &Ray, world: &Vec<Sphere>, depth: usize) -> Color {
     if depth <= 0 {
         return Color::new(0.0, 0.0, 0.0);
     }
 
-    if world.hit(r, 0.001, INFINITY, &mut rec) {
-        let target = rec.p + rec.normal + random_unit_vector();
-        let ray = Ray::new(rec.p, target - rec.p);
+    if let Some(record) = hit_world(world, r, 0.001, INFINITY) {
+        let target = record.p + record.normal + random_unit_vector();
+        let ray = Ray::new(record.p, target - record.p);
         return 0.5 * ray_color(&ray, world, depth - 1);
+    } else {
+        let unit_direction = r.direction.unit_vector();
+        let t = 0.5 * (unit_direction.y + 1.0);
+
+        Color::new(1.0, 1.0, 1.0) * (1.0 - t) + Color::new(0.5, 0.7, 1.0) * t
     }
-
-    let unit_direction = r.direction.unit_vector();
-    let t = 0.5 * (unit_direction.y + 1.0);
-
-    Color::new(1.0, 1.0, 1.0) * (1.0 - t) + Color::new(0.5, 0.7, 1.0) * t
 }
 
 fn random_in_unit_sphere() -> Vec3 {
