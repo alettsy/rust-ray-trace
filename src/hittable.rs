@@ -46,7 +46,7 @@ mod tests {
         assert_eq!(empty.p, Vec3::new(0.0, 0.0, 0.0));
         assert_eq!(empty.normal, Vec3::new(0.0, 0.0, 0.0));
         assert_eq!(empty.t, 0.0);
-        assert_eq!(empty.front_face, false);
+        assert!(!empty.front_face);
     }
 
     #[test]

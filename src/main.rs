@@ -1,14 +1,15 @@
-use rand::{thread_rng, Rng};
+use std::{fs::File, io::Error};
+use std::io::Write;
+
+use rand::{Rng, thread_rng};
+
 use raytracing::camera::Camera;
 use raytracing::hittable::{HitRecord, Hittable};
 use raytracing::hittable_list::HittableList;
 use raytracing::material::{Lambertian, Material, Metal, Scatterable};
 use raytracing::ray::Ray;
 use raytracing::sphere::Sphere;
-use raytracing::vec3::{Color, Point3, Vec3};
-use std::f64::INFINITY;
-use std::io::Write;
-use std::{fs::File, io::Error};
+use raytracing::vec3::{Color, Point3};
 
 fn main() {
     // Image
@@ -18,15 +19,15 @@ fn main() {
     let samples_per_pixel: usize = 100;
     let max_depth = 15;
 
-    println!("Image size: {}x{}", image_height, image_width);
+    println!("Image size: {}x{}", image_width, image_height);
 
     // World
     let mut world = HittableList::new();
 
     let material_ground = Lambertian::new(Color::new(0.8, 0.8, 0.0));
     let material_center = Lambertian::new(Color::new(0.7, 0.3, 0.3));
-    let material_left = Metal::new(Color::new(0.8, 0.8, 0.8));
-    let material_right = Metal::new(Color::new(0.8, 0.6, 0.2));
+    let material_left = Metal::new(Color::new(0.8, 0.8, 0.8), 0.3);
+    let material_right = Metal::new(Color::new(0.8, 0.6, 0.2), 1.0);
 
     let sphere1 = Sphere::new(
         Point3::new(0.0, -100.5, -1.0),
@@ -93,7 +94,7 @@ fn clamp(x: f64, min: f64, max: f64) -> f64 {
     }
 }
 
-fn hit_world(world: &Vec<Sphere>, r: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
+fn hit_world(world: &[Sphere], r: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
     let mut closest = t_max;
     let mut hit_record = None;
     for sphere in world {
@@ -106,49 +107,34 @@ fn hit_world(world: &Vec<Sphere>, r: &Ray, t_min: f64, t_max: f64) -> Option<Hit
     hit_record
 }
 
-fn ray_color(r: &Ray, world: &Vec<Sphere>, depth: usize) -> Color {
+fn ray_color(r: &Ray, world: &[Sphere], depth: isize) -> Color {
     if depth <= 0 {
         return Color::new(0.0, 0.0, 0.0);
     }
 
-    let hit = hit_world(world, r, 0.001, INFINITY);
+    let hit = hit_world(world, r, 0.001, f64::INFINITY);
     match hit {
         Some(record) => {
             let scattered = record.material.scatter(r, &record);
             match scattered {
                 Some((albedo, scattered_ray)) => {
                     let target_color = ray_color(&scattered_ray, world, depth - 1);
-                    return Color::new(
+                    Color::new(
                         albedo.x * target_color.x,
                         albedo.y * target_color.y,
                         albedo.z * target_color.z,
-                    );
+                    )
                 }
                 None => {
-                    return Color::new(0.0, 0.0, 0.0);
+                    Color::new(0.0, 0.0, 0.0)
                 }
             }
         }
         None => {
             let t = 0.5 * (r.direction.unit_vector().y + 1.0);
-            return Color::new(1.0, 1.0, 1.0) * (1.0 - t) + Color::new(0.5, 0.7, 1.0) * t;
+            Color::new(1.0, 1.0, 1.0) * (1.0 - t) + Color::new(0.5, 0.7, 1.0) * t
         }
     }
-}
-
-fn random_in_unit_sphere() -> Vec3 {
-    loop {
-        let p = Vec3::random_range(-1.0, 1.0);
-        if p.length_squared() >= 1.0 {
-            continue;
-        } else {
-            return p;
-        }
-    }
-}
-
-fn random_unit_vector() -> Vec3 {
-    random_in_unit_sphere().unit_vector()
 }
 
 fn generate_color(pixel_color: Color, samples_per_pixel: usize) -> Color {
@@ -168,18 +154,18 @@ fn generate_color(pixel_color: Color, samples_per_pixel: usize) -> Color {
     Color::new(new_r, new_g, new_b)
 }
 
-fn write_to_file(width: u32, height: u32, pixels: &Vec<Color>) -> Result<(), Error> {
+fn write_to_file(width: u32, height: u32, pixels: &[Color]) -> Result<(), Error> {
     let mut file = File::create("output.ppm")?;
 
-    let header = format!("P3\n{} {}\n255\n", width, height).to_string();
+    let header = format!("P3\n{} {}\n255\n", width, height);
 
     write!(file, "{}", header)?;
 
-    for i in 0..pixels.len() {
-        let r = pixels[i].x as usize;
-        let g = pixels[i].y as usize;
-        let b = pixels[i].z as usize;
-        write!(file, "{} {} {}\n", r, g, b).unwrap();
+    for pixel in pixels {
+        let r = pixel.x as usize;
+        let g = pixel.y as usize;
+        let b = pixel.z as usize;
+        file.write_fmt(format_args!("{} {} {}\n", r, g, b)).unwrap();
     }
 
     Ok(())

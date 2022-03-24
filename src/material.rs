@@ -37,7 +37,7 @@ impl Lambertian {
 }
 
 impl Scatterable for Lambertian {
-    fn scatter(&self, r_in: &Ray, rec: &HitRecord) -> Option<(Color, Ray)> {
+    fn scatter(&self, _r_in: &Ray, rec: &HitRecord) -> Option<(Color, Ray)> {
         let mut scatter_dir = rec.normal + random_in_unit_sphere();
         if scatter_dir.near_zero() {
             scatter_dir = rec.normal;
@@ -53,21 +53,22 @@ impl Scatterable for Lambertian {
 #[derive(Debug, Clone, Copy)]
 pub struct Metal {
     albedo: Color,
+    fuzz: f64,
 }
 
 impl Metal {
-    pub fn new(albedo: Color) -> Metal {
-        Metal { albedo }
+    pub fn new(albedo: Color, fuzz: f64) -> Metal {
+        Metal { albedo, fuzz }
     }
 }
 
 impl Scatterable for Metal {
     fn scatter(&self, r_in: &Ray, rec: &HitRecord) -> Option<(Color, Ray)> {
         let reflected = r_in.direction.unit_vector().reflect(rec.normal);
-        let scattered = Ray::new(rec.p, reflected);
-        let attentuation = self.albedo;
+        let scattered = Ray::new(rec.p, reflected + self.fuzz * random_in_unit_sphere());
+        let attenuation = self.albedo;
         if scattered.direction.dot(rec.normal) > 0.0 {
-            Some((attentuation, scattered))
+            Some((attenuation, scattered))
         } else {
             None
         }

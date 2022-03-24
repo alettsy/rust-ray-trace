@@ -33,11 +33,11 @@ impl Hittable for Sphere {
             return None;
         }
 
-        let sqrtd = discriminant.sqrt();
-        let mut root = (-half_b - sqrtd) / a;
+        let square_root_d = discriminant.sqrt();
+        let mut root = (-half_b - square_root_d) / a;
 
         if root < t_min || t_max < root {
-            root = (-half_b + sqrtd) / a;
+            root = (-half_b + square_root_d) / a;
             if root < t_min || t_max < root {
                 return None;
             }
@@ -49,7 +49,7 @@ impl Hittable for Sphere {
         empty_record.set_face_normal(r, outward_normal);
         empty_record.material = self.material;
 
-        return Some(empty_record);
+        Some(empty_record)
     }
 }
 
