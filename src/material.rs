@@ -13,6 +13,7 @@ pub enum Material {
     None,
     Lambertian(Lambertian),
     Metal(Metal),
+    Dielectric(Dielectric),
 }
 
 impl Scatterable for Material {
@@ -21,6 +22,7 @@ impl Scatterable for Material {
             Material::None => None,
             Material::Lambertian(l) => l.scatter(r_in, rec),
             Material::Metal(m) => m.scatter(r_in, rec),
+            Material::Dielectric(d) => d.scatter(r_in, rec),
         }
     }
 }
@@ -72,6 +74,48 @@ impl Scatterable for Metal {
         } else {
             None
         }
+    }
+}
+
+#[derive(Debug, Clone, Copy)]
+pub struct Dielectric {
+    index_of_refraction: f64,
+}
+
+impl Dielectric {
+    pub fn new(index_of_refraction: f64) -> Dielectric {
+        Dielectric {
+            index_of_refraction,
+        }
+    }
+}
+
+impl Scatterable for Dielectric {
+    fn scatter(&self, r_in: &Ray, rec: &HitRecord) -> Option<(Color, Ray)> {
+        let attenuation = Color::new(1.0, 1.0, 1.0);
+
+        let refraction_ratio = if rec.front_face {
+            1.0 / self.index_of_refraction
+        } else {
+            self.index_of_refraction
+        };
+
+        let unit_dir = r_in.direction.unit_vector();
+
+        let cos_theta = rec.normal.dot(-unit_dir).min(1.0);
+        let sin_theta = (1.0 - cos_theta * cos_theta).sqrt();
+
+        let cannot_refract = refraction_ratio * sin_theta > 1.0;
+
+        let direction = if cannot_refract {
+            unit_dir.reflect(rec.normal)
+        } else {
+            unit_dir.refract(rec.normal, refraction_ratio)
+        };
+
+        let scattered = Ray::new(rec.p, direction);
+
+        Some((attenuation, scattered))
     }
 }
 

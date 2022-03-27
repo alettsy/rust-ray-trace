@@ -1,12 +1,12 @@
-use std::{fs::File, io::Error};
 use std::io::Write;
+use std::{fs::File, io::Error};
 
-use rand::{Rng, thread_rng};
+use rand::{thread_rng, Rng};
 
 use raytracing::camera::Camera;
 use raytracing::hittable::{HitRecord, Hittable};
 use raytracing::hittable_list::HittableList;
-use raytracing::material::{Lambertian, Material, Metal, Scatterable};
+use raytracing::material::{Dielectric, Lambertian, Material, Metal, Scatterable};
 use raytracing::ray::Ray;
 use raytracing::sphere::Sphere;
 use raytracing::vec3::{Color, Point3};
@@ -25,9 +25,9 @@ fn main() {
     let mut world = HittableList::new();
 
     let material_ground = Lambertian::new(Color::new(0.8, 0.8, 0.0));
-    let material_center = Lambertian::new(Color::new(0.7, 0.3, 0.3));
-    let material_left = Metal::new(Color::new(0.8, 0.8, 0.8), 0.3);
-    let material_right = Metal::new(Color::new(0.8, 0.6, 0.2), 1.0);
+    let material_center = Lambertian::new(Color::new(0.1, 0.2, 0.5));
+    let material_left = Dielectric::new(1.5);
+    let material_right = Metal::new(Color::new(0.8, 0.6, 0.2), 0.0);
 
     let sphere1 = Sphere::new(
         Point3::new(0.0, -100.5, -1.0),
@@ -42,7 +42,7 @@ fn main() {
     let sphere3 = Sphere::new(
         Point3::new(-1.0, 0.0, -1.0),
         0.5,
-        Material::Metal(material_left),
+        Material::Dielectric(material_left),
     );
     let sphere4 = Sphere::new(
         Point3::new(1.0, 0.0, -1.0),
@@ -125,9 +125,7 @@ fn ray_color(r: &Ray, world: &[Sphere], depth: isize) -> Color {
                         albedo.z * target_color.z,
                     )
                 }
-                None => {
-                    Color::new(0.0, 0.0, 0.0)
-                }
+                None => Color::new(0.0, 0.0, 0.0),
             }
         }
         None => {
