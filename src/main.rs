@@ -49,10 +49,16 @@ fn main() {
         0.5,
         Material::Metal(material_right),
     );
+    let sphere5 = Sphere::new(
+        Point3::new(-1.0, 0.0, -1.0),
+        -0.4,
+        Material::Dielectric(material_left),
+    );
     world.add(sphere1);
     world.add(sphere2);
     world.add(sphere3);
     world.add(sphere4);
+    world.add(sphere5);
 
     // Camera
     let aspect_ratio = 16.0 / 9.0;

@@ -1,3 +1,5 @@
+use rand::Rng;
+
 use crate::{
     hittable::HitRecord,
     ray::Ray,
@@ -88,6 +90,12 @@ impl Dielectric {
             index_of_refraction,
         }
     }
+
+    pub fn reflectance(cosine: f64, ref_index: f64) -> f64 {
+        let mut r0 = (1.0 - ref_index) / (1.0 + ref_index);
+        r0 = r0 * r0;
+        r0 + (1.0 - r0) * (1.0 - cosine).powf(5.0)
+    }
 }
 
 impl Scatterable for Dielectric {
@@ -107,7 +115,11 @@ impl Scatterable for Dielectric {
 
         let cannot_refract = refraction_ratio * sin_theta > 1.0;
 
-        let direction = if cannot_refract {
+        let mut rng = rand::thread_rng();
+        let random_double: f64 = rng.gen_range(0.0..=1.0);
+        let direction = if cannot_refract
+            || Dielectric::reflectance(cos_theta, refraction_ratio) > random_double
+        {
             unit_dir.reflect(rec.normal)
         } else {
             unit_dir.refract(rec.normal, refraction_ratio)
