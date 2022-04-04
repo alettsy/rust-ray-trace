@@ -1,11 +1,11 @@
 use std::io::Write;
+use std::time::Instant;
 use std::{fs::File, io::Error};
 
 use rand::{thread_rng, Rng};
 
 use raytracing::camera::Camera;
-use raytracing::hittable::{HitRecord, Hittable};
-use raytracing::hittable_list::HittableList;
+use raytracing::hittable::{HitRecord, Hittable, HittableList};
 use raytracing::material::{Dielectric, Lambertian, Material, Metal, Scatterable};
 use raytracing::ray::Ray;
 use raytracing::sphere::Sphere;
@@ -69,6 +69,8 @@ fn main() {
     // Generate pixels
     let mut pixels: Vec<Color> = vec![];
 
+    let now = Instant::now();
+
     let mut rng = thread_rng();
     for j in (0..image_height).rev() {
         for i in 0..image_width {
@@ -84,7 +86,10 @@ fn main() {
         }
     }
 
+    let time_elapsed = now.elapsed().as_secs();
+
     println!("Finished generating. Pixel count: {}", pixels.len());
+    println!("Time elapsed: {} s", time_elapsed);
 
     // Render
     write_to_file(image_width, image_height, &pixels).unwrap();
@@ -100,7 +105,7 @@ fn clamp(x: f64, min: f64, max: f64) -> f64 {
     }
 }
 
-fn hit_world(world: &[Sphere], r: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
+fn hit_world<'a>(world: &'a [Sphere], r: &'a Ray, t_min: f64, t_max: f64) -> Option<HitRecord<'a>> {
     let mut closest = t_max;
     let mut hit_record = None;
     for sphere in world {

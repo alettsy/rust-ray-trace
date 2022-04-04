@@ -47,7 +47,7 @@ impl Hittable for Sphere {
         empty_record.p = r.at(empty_record.t);
         let outward_normal = (empty_record.p - self.center) / self.radius;
         empty_record.set_face_normal(r, outward_normal);
-        empty_record.material = self.material;
+        empty_record.material = &self.material;
 
         Some(empty_record)
     }
